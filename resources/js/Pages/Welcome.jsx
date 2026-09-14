@@ -1,13 +1,23 @@
 import { Head, Link } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 export default function Welcome({ auth }) {
+    const [isSwapped, setIsSwapped] = useState(false);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsSwapped(prev => !prev);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <>
             <Head title="Selamat Datang" />
             
             <div className="font-sans min-h-screen flex flex-col bg-white overflow-hidden text-gray-800">
                 {/* HERO SECTION */}
-                <section className="relative w-full bg-[#FF6B35] text-white pt-6 pb-40 overflow-visible">
+                <section id="beranda" className="relative w-full bg-[#FF6B35] text-white pt-6 pb-40 overflow-visible">
                     {/* Floating Decorative Shapes */}
                     <div className="absolute top-20 left-10 w-8 h-8 rounded-full border-4 border-emerald-400 opacity-80 animate-pulse"></div>
                     <div className="absolute top-40 right-20 w-12 h-12 bg-yellow-400 opacity-90 rotate-45 transform"></div>
@@ -80,22 +90,27 @@ export default function Welcome({ auth }) {
                                 </div>
                             </div>
 
-                            <div className="flex-1 relative w-full h-[400px] hidden md:block">
+                            <div className="flex-1 relative w-full h-[400px] hidden md:block perspective-1000">
                                 {/* Simulated 3D Illustration using floating divs */}
-                                <div className="absolute top-0 right-10 w-64 h-80 bg-white rounded-3xl shadow-2xl transform rotate-12 flex flex-col p-6 z-20">
-                                    <div className="w-full h-32 bg-gray-100 rounded-2xl mb-4 overflow-hidden relative">
-                                        <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-                                            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                        </div>
+                                <div className={`absolute w-64 h-80 bg-white rounded-3xl shadow-2xl flex flex-col p-6 transition-all duration-1000 ease-in-out ${isSwapped ? 'top-10 right-40 -rotate-6 z-10 scale-90 opacity-70' : 'top-0 right-10 rotate-12 z-20 scale-100 opacity-100'}`}>
+                                    <div className="w-full h-32 bg-gray-100 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                        <img src="/found_item_phone.jpg" alt="Lost Phone" className="w-full h-full object-cover" />
                                     </div>
-                                    <div className="h-4 bg-gray-200 rounded-full w-3/4 mb-3"></div>
-                                    <div className="h-4 bg-gray-200 rounded-full w-1/2 mb-auto"></div>
-                                    <div className="mt-4 bg-yellow-400 text-center py-2 rounded-xl font-bold text-yellow-900 text-xs">FOUND ITEM</div>
+                                    <div className="mb-auto mt-2">
+                                        <h3 className="font-bold text-gray-800 text-sm mb-1 leading-tight">Kehilangan Sesuatu?</h3>
+                                        <p className="text-[11px] text-gray-500 leading-tight font-medium">Segera laporkan agar cepat kembali.</p>
+                                    </div>
+                                    <div className="mt-4 bg-blue-500 text-white text-center py-2 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md">Lost Item</div>
                                 </div>
-                                <div className="absolute top-20 right-40 w-56 h-64 bg-[#f8f9fa] rounded-3xl shadow-2xl transform -rotate-6 flex flex-col p-6 z-10 border-4 border-white">
-                                    <div className="w-12 h-12 bg-red-400 rounded-full mb-4 flex items-center justify-center text-white font-bold">!</div>
-                                    <div className="h-4 bg-gray-300 rounded-full w-full mb-3"></div>
-                                    <div className="h-4 bg-gray-300 rounded-full w-2/3"></div>
+                                <div className={`absolute w-64 h-80 bg-[#f8f9fa] rounded-3xl shadow-2xl flex flex-col p-6 border-4 border-white transition-all duration-1000 ease-in-out ${isSwapped ? 'top-0 right-10 rotate-12 z-20 scale-100 opacity-100' : 'top-10 right-40 -rotate-6 z-10 scale-90 opacity-70'}`}>
+                                    <div className="w-full h-32 bg-gray-100 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                        <img src="/found_item_watch.jpg" alt="Found Watch" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="mb-auto mt-2">
+                                        <h3 className="font-bold text-gray-800 text-sm mb-1 leading-tight">Menemukan Barang?</h3>
+                                        <p className="text-[11px] text-gray-500 leading-tight font-medium">Bantu kembalikan dan jadilah pahlawan.</p>
+                                    </div>
+                                    <div className="mt-4 bg-yellow-400 text-yellow-900 text-center py-2 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md">Found Item</div>
                                 </div>
                             </div>
                         </div>
@@ -110,7 +125,7 @@ export default function Welcome({ auth }) {
                 </section>
 
                 {/* QUOTE SECTION */}
-                <section className="bg-white py-20 relative text-center px-6">
+                <section id="tentang" className="bg-white py-20 relative text-center px-6">
                     <div className="absolute top-10 left-20 w-4 h-4 bg-blue-400 rotate-45"></div>
                     <div className="absolute bottom-10 right-20 w-5 h-5 rounded-full bg-green-400"></div>
 
@@ -207,9 +222,9 @@ export default function Welcome({ auth }) {
                         
                         <div className="flex flex-col md:flex-row justify-between items-center text-xs text-blue-300 font-bold">
                             <div className="flex gap-6 mb-4 md:mb-0">
-                                <a href="#" className="hover:text-white">BERANDA</a>
-                                <a href="#" className="hover:text-white">TENTANG</a>
-                                <a href="#" className="hover:text-white">BANTUAN</a>
+                                <a href="#beranda" className="hover:text-white">BERANDA</a>
+                                <a href="#tentang" className="hover:text-white">TENTANG</a>
+                                <a href="#carakerja" className="hover:text-white">CARA KERJA</a>
                             </div>
                             <div>
                                 Copyright © 2026 LostFound PNL

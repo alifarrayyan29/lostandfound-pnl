@@ -9,14 +9,14 @@ export default function Scan({ qr }) {
 
     const submit = (e) => {
         e.preventDefault();
-        if (confirm("Pastikan barang fisik sudah diserahkan ke pengklaim. Lanjutkan?")) {
-            post(route('admin.qr.handover'));
+        if (confirm("Apakah Anda yakin telah menerima barang ini?")) {
+            post(route('qr.handover'));
         }
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Konfirmasi Serah Terima Barang</h2>}>
-            <Head title="Scan QR Code" />
+        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Konfirmasi Penerimaan Barang</h2>}>
+            <Head title="Terima Barang" />
 
             <div className="py-12">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
@@ -27,7 +27,7 @@ export default function Scan({ qr }) {
                         </div>
                         
                         <h3 className="text-2xl font-black text-gray-900 mb-2">QR Code Valid!</h3>
-                        <p className="text-gray-500 mb-8">Data laporan barang temuan di bawah ini cocok dengan QR Code yang dipindai.</p>
+                        <p className="text-gray-500 mb-8">Data laporan barang di bawah ini cocok dengan QR Code yang dipindai.</p>
                         
                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-left mb-8 space-y-4">
                             <div>
@@ -45,14 +45,14 @@ export default function Scan({ qr }) {
                                 </div>
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase">Pelapor (Penemu)</p>
+                                <p className="text-xs font-bold text-gray-400 uppercase">Penemu Barang</p>
                                 <p className="text-sm font-bold text-gray-700">{qr.item_report.user?.name}</p>
                             </div>
                         </div>
 
                         {qr.status === 'handed_over' || qr.item_report.status === 'closed' ? (
                             <div className="bg-green-50 text-green-700 p-4 rounded-xl font-bold border border-green-200">
-                                Barang ini sudah diserahterimakan dan laporan telah DITUTUP.
+                                Barang ini sudah Anda terima dan laporan telah DITUTUP.
                             </div>
                         ) : (
                             <form onSubmit={submit}>
@@ -60,9 +60,9 @@ export default function Scan({ qr }) {
                                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-lg shadow-lg shadow-emerald-200 justify-center" 
                                     disabled={processing}
                                 >
-                                    Selesaikan Serah Terima (Tutup Laporan)
+                                    Saya Telah Menerima Barang Ini
                                 </PrimaryButton>
-                                <p className="text-xs text-gray-400 mt-4">Dengan menekan tombol ini, Anda mengonfirmasi bahwa barang fisik telah diberikan kepada pemilik yang sah dan laporan akan ditutup sepenuhnya.</p>
+                                <p className="text-xs text-gray-400 mt-4">Dengan menekan tombol ini, Anda mengonfirmasi bahwa Anda telah menerima barang fisik dari penemu, dan poin penghargaan akan diberikan kepadanya.</p>
                             </form>
                         )}
                         

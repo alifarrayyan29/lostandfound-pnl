@@ -13,10 +13,6 @@ export default function Dashboard({ claims, stats, reports, qrTags, chartData })
         }
     };
 
-    const generateQr = (reportId) => {
-        router.post(route('admin.qr.generate'), { item_report_id: reportId });
-    };
-
     const barData = {
         labels: ['Kehilangan (Lost)', 'Ditemukan (Found)'],
         datasets: [{
@@ -185,6 +181,7 @@ export default function Dashboard({ claims, stats, reports, qrTags, chartData })
                             <thead className="bg-gray-50/50">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Barang</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Pelapor</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider print:hidden">QR Code</th>
                                     <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider print:hidden">Aksi</th>
@@ -198,26 +195,21 @@ export default function Dashboard({ claims, stats, reports, qrTags, chartData })
                                             <div className="text-xs text-gray-400">{report.type === 'lost' ? 'Kehilangan' : 'Ditemukan'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-bold text-gray-800">{report.user?.name || 'Anonim'}</div>
+                                            <div className="text-xs text-gray-400">{report.type === 'lost' ? 'Yang Kehilangan' : 'Penemu Barang'}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="px-3 py-1 text-[10px] font-bold rounded-full bg-gray-100 text-gray-500 uppercase tracking-wide">{report.status}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap flex justify-center print:hidden">
                                             {qrTags[report.id] ? (
-                                                <div className="border-2 border-orange-100 rounded-xl p-2 bg-white">
-                                                    <QRCodeSVG value={`${window.location.origin}/admin/scan/${qrTags[report.id].code}`} size={64} fgColor="#ff6b35" />
-                                                </div>
+                                                <span className="text-orange-500 font-bold text-xs bg-orange-50 px-3 py-1 rounded-full uppercase">Ada QR</span>
                                             ) : (
                                                 <span className="text-gray-300 text-xs italic">Belum dibuat</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right print:hidden">
-                                            {!qrTags[report.id] && report.type === 'found' && (
-                                                <button 
-                                                    onClick={() => generateQr(report.id)}
-                                                    className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-[#ff8c5a] hover:text-white rounded-full text-xs font-bold transition-colors"
-                                                >
-                                                    Buat QR
-                                                </button>
-                                            )}
+
                                             {qrTags[report.id] && qrTags[report.id].status === 'active' && (
                                                 <span className="text-orange-500 text-xs font-bold bg-orange-50 px-3 py-1.5 rounded-full">Siap Discan</span>
                                             )}

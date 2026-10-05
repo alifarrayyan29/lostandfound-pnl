@@ -65,6 +65,12 @@ class AdminController extends Controller
                 'status' => 'claimed'
             ]);
             
+            // Otomatis generate QR code untuk diserahkan
+            \App\Models\QrTag::firstOrCreate(
+                ['item_report_id' => $claim->item_report_id],
+                ['code' => (string) \Illuminate\Support\Str::uuid(), 'status' => 'active']
+            );
+            
             // Tolak klaim lain (jika ada) untuk barang yang sama
             Claim::where('item_report_id', $claim->item_report_id)
                 ->where('id', '!=', $claim->id)
@@ -79,52 +85,4 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Status klaim berhasil diperbarui.');
     }
 
-    public function generateQr(Request $request)
-    {
-        $validated = $request->validate(['item_report_id' => 'required|exists:item_reports,id']);
-        
-        $qr = \App\Models\QrTag::firstOrCreate(
-            ['item_report_id' => $validated['item_report_id']],
-            ['code' => (string) \Illuminate\Support\Str::uuid(), 'status' => 'active']
-        );
-        
-        return back()->with('success', 'QR Code berhasil dibuat.');
-    }
-
-    public function scanQr($code)
-    {
-        $qr = \App\Models\QrTag::where('code', $code)->with(['itemReport.user', 'itemReport.category'])->firstOrFail();
-        
-        return Inertia::render('Admin/Scan', [
-            'qr' => $qr
-        ]);
-    }
-
-    public function confirmHandover(Request $request)
-    {
-        $validated = $request->validate(['code' => 'required|exists:qr_tags,code']);
-        $qr = \App\Models\QrTag::where('code', $validated['code'])->first();
-        
-        $qr->update(['status' => 'handed_over']);
-        $itemReport = $qr->itemReport;
-        $itemReport->update(['status' => 'closed']);
-        
-        // Award points if the original reporter found the item
-        if ($itemReport->type === 'found' && $itemReport->user_id) {
-            $user = $itemReport->user;
-            $user->increment('points', 10);
-            
-            // Check for new badges
-            $earnedBadgeIds = $user->badges()->pluck('badges.id')->toArray();
-            $newBadges = \App\Models\Badge::where('point_threshold', '<=', $user->points)
-                                          ->whereNotIn('id', $earnedBadgeIds)
-                                          ->get();
-            
-            foreach ($newBadges as $badge) {
-                $user->badges()->attach($badge->id);
-            }
-        }
-        
-        return redirect()->route('admin.dashboard')->with('success', 'Barang telah berhasil diserahterimakan, laporan ditutup, dan poin diberikan kepada penemu!');
-    }
 }

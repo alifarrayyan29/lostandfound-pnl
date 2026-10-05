@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { QRCodeSVG } from 'qrcode.react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -12,7 +13,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-export default function Show({ report, hasClaimed }) {
+export default function Show({ report, hasClaimed, qrCodeUrl }) {
     const { auth } = usePage().props;
     const hasLocation = report.latitude && report.longitude;
     const position = hasLocation ? [report.latitude, report.longitude] : null;
@@ -120,6 +121,19 @@ export default function Show({ report, hasClaimed }) {
                                         </div>
                                     </div>
                                 </div>
+
+                                {qrCodeUrl && auth.user?.id === report.user_id && (
+                                    <div className="mt-8">
+                                        <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">QR Code Serah Terima</h3>
+                                        <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200 flex flex-col items-center justify-center text-center">
+                                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 mb-4 inline-block">
+                                                <QRCodeSVG value={qrCodeUrl} size={150} fgColor="#047857" />
+                                            </div>
+                                            <p className="text-sm text-emerald-800 font-bold mb-1">Tunjukkan QR Code ini ke Pemilik Barang!</p>
+                                            <p className="text-xs text-emerald-600">Pemilik barang harus men-scan QR ini menggunakan HP mereka saat bertemu dengan Anda untuk mengonfirmasi serah terima barang. Anda akan otomatis mendapatkan poin setelah mereka mengonfirmasi.</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Tombol Aksi */}

@@ -87,7 +87,7 @@ class ItemReportController extends Controller
 
     public function show(ItemReport $report)
     {
-        $report->load(['user', 'category', 'building']);
+        $report->load(['user', 'category', 'building', 'qrTag']);
         
         $hasClaimed = false;
         if (auth()->check()) {
@@ -98,7 +98,10 @@ class ItemReportController extends Controller
 
         return Inertia::render('ItemReports/Show', [
             'report' => $report,
-            'hasClaimed' => $hasClaimed
+            'hasClaimed' => $hasClaimed,
+            'qrCodeUrl' => $report->qrTag && $report->qrTag->status === 'active' 
+                ? route('qr.scan', $report->qrTag->code) 
+                : null
         ]);
     }
 

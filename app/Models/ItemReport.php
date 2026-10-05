@@ -30,4 +30,9 @@ class ItemReport extends Model
     {
         return $this->hasMany(Claim::class);
     }
+
+    public function qrTag()
+    {
+        return $this->hasOne(QrTag::class);
+    }
 }

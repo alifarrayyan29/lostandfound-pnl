@@ -40,19 +40,30 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'nim' => $request->nim,
-            'email' => $request->email,
-            'major' => $request->major,
-            'whatsapp_number' => $request->whatsapp_number,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
-        event(new Registered($user));
+            $user = User::create([
+                'name' => $request->name,
+                'nim' => $request->nim,
+                'email' => $request->email,
+                'major' => $request->major,
+                'whatsapp_number' => $request->whatsapp_number,
+                'password' => Hash::make($request->password),
+            ]);
 
-        Auth::login($user);
+            event(new Registered($user));
 
-        return redirect(route('dashboard', absolute: false));
+            \Illuminate\Support\Facades\DB::commit();
+
+            Auth::login($user);
+
+            return redirect(route('dashboard', absolute: false));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->withErrors([
+                'email' => 'Pendaftaran gagal (Email verifikasi tidak dapat dikirim). Error: ' . $e->getMessage()
+            ])->withInput();
+        }
     }
 }

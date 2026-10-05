@@ -32,6 +32,7 @@ use App\Http\Controllers\ItemReportController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\QrHandoverController;
 use App\Http\Middleware\AdminMiddleware;
 
 use App\Http\Controllers\AdminCategoryController;
@@ -41,15 +42,12 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::patch('/claims/{claim}', [AdminController::class, 'updateClaimStatus'])->name('claims.update');
     
-    Route::post('/qr/generate', [AdminController::class, 'generateQr'])->name('qr.generate');
-    Route::get('/scan/{code}', [AdminController::class, 'scanQr'])->name('qr.scan');
-    Route::post('/qr/handover', [AdminController::class, 'confirmHandover'])->name('qr.handover');
-    
+
     Route::resource('categories', AdminCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('buildings', AdminBuildingController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -60,6 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    
+    Route::get('/scan/{code}', [QrHandoverController::class, 'scan'])->name('qr.scan');
+    Route::post('/qr/handover', [QrHandoverController::class, 'confirmHandover'])->name('qr.handover');
 });
 
 require __DIR__.'/auth.php';

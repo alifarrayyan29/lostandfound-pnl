@@ -78,4 +78,37 @@ class QrHandoverController extends Controller
         
         return redirect()->route('dashboard')->with('success', 'Barang telah berhasil diterima, laporan resmi ditutup. Terima kasih!');
     }
+
+    public function generate(Request $request, \App\Models\ItemReport $report)
+    {
+        // 1. Pastikan yang mengakses adalah pelapor / penemu barang
+        if (auth()->id() !== $report->user_id) {
+            abort(403, 'Hanya pembuat laporan yang dapat mengenerate QR Code.');
+        }
+
+        // 2. Pastikan laporan bertipe 'found' dan status 'claimed' (disetujui admin)
+        if ($report->type !== 'found' || $report->status !== 'claimed') {
+            return redirect()->back()->with('error', 'QR Code hanya dapat digenerate setelah klaim disetujui oleh Admin.');
+        }
+
+        // 3. Pastikan ada klaim yang disetujui untuk laporan ini
+        $hasApprovedClaim = Claim::where('item_report_id', $report->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$hasApprovedClaim) {
+            return redirect()->back()->with('error', 'Belum ada pengajuan klaim yang disetujui untuk barang ini.');
+        }
+
+        // 4. Buat atau perbarui QR Code aktif
+        QrTag::updateOrCreate(
+            ['item_report_id' => $report->id],
+            [
+                'code' => (string) \Illuminate\Support\Str::uuid(),
+                'status' => 'active'
+            ]
+        );
+
+        return redirect()->back()->with('success', 'QR Code serah terima berhasil digenerate! Silakan tunjukkan ke pengklaim barang.');
+    }
 }

@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/scan/{code}', [QrHandoverController::class, 'scan'])->name('qr.scan');
     Route::post('/qr/handover', [QrHandoverController::class, 'confirmHandover'])->name('qr.handover');
+    Route::post('/reports/{report}/generate-qr', [QrHandoverController::class, 'generate'])->name('qr.generate');
 });
 
 require __DIR__.'/auth.php';

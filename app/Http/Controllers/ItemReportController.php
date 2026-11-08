@@ -96,9 +96,19 @@ class ItemReportController extends Controller
                 ->first();
         }
 
+        // Ambil data pengklaim yang disahkan/disetujui admin
+        $approvedClaim = null;
+        if ($report->status === 'claimed' || $report->status === 'closed') {
+            $approvedClaim = \App\Models\Claim::with('claimant')
+                ->where('item_report_id', $report->id)
+                ->where('status', 'approved')
+                ->first();
+        }
+
         return Inertia::render('ItemReports/Show', [
             'report' => $report,
             'userClaim' => $userClaim,
+            'approvedClaim' => $approvedClaim,
             'hasClaimed' => (bool) $userClaim,
             'qrCodeUrl' => $report->qrTag && $report->qrTag->status === 'active' 
                 ? route('qr.scan', $report->qrTag->code) 

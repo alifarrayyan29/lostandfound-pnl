@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,10 +13,16 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-export default function Show({ report, hasClaimed, userClaim, qrCodeUrl }) {
+export default function Show({ report, hasClaimed, userClaim, approvedClaim, qrCodeUrl }) {
     const { auth } = usePage().props;
     const hasLocation = report.latitude && report.longitude;
     const position = hasLocation ? [report.latitude, report.longitude] : null;
+
+    const handleGenerateQr = () => {
+        router.post(route('qr.generate', report.id), {}, {
+            preserveScroll: true
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -122,15 +128,59 @@ export default function Show({ report, hasClaimed, userClaim, qrCodeUrl }) {
                                     </div>
                                 </div>
 
-                                {qrCodeUrl && auth.user?.id === report.user_id && report.status === 'claimed' && (
+                                {auth.user?.id === report.user_id && report.status === 'claimed' && (
                                     <div className="mt-8">
-                                        <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">QR Code Serah Terima</h3>
-                                        <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200 flex flex-col items-center justify-center text-center">
-                                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 mb-4 inline-block">
-                                                <QRCodeSVG value={qrCodeUrl} size={150} fgColor="#047857" />
-                                            </div>
-                                            <p className="text-sm text-emerald-800 font-bold mb-1">Tunjukkan QR Code ini ke Pemilik Barang!</p>
-                                            <p className="text-xs text-emerald-600">Pemilik barang harus memindai QR ini menggunakan HP mereka saat bertemu dengan Anda untuk mengonfirmasi serah terima barang. Anda akan otomatis mendapatkan poin setelah konfirmasi berhasil.</p>
+                                        <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">Serah Terima & QR Code</h3>
+                                        <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 flex flex-col items-center justify-center text-center">
+                                            
+                                            {approvedClaim && (
+                                                <div className="mb-4 bg-white/90 p-3.5 rounded-xl border border-emerald-100 text-xs text-emerald-950 w-full max-w-sm text-left">
+                                                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Pengklaim yang Disetujui:</span>
+                                                    <div className="font-bold text-sm text-gray-900 mt-0.5">{approvedClaim.claimant?.name}</div>
+                                                    <div className="text-gray-500 text-xs">{approvedClaim.claimant?.nim || approvedClaim.claimant?.email}</div>
+                                                    {approvedClaim.claimant?.whatsapp_number && (
+                                                        <div className="text-emerald-700 font-bold mt-1 text-xs">WhatsApp: {approvedClaim.claimant.whatsapp_number}</div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {qrCodeUrl ? (
+                                                <>
+                                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 mb-3 inline-block">
+                                                        <QRCodeSVG value={qrCodeUrl} size={160} fgColor="#047857" />
+                                                    </div>
+                                                    <p className="text-sm text-emerald-900 font-bold mb-1">Tunjukkan QR Code ini ke Pengklaim Barang!</p>
+                                                    <p className="text-xs text-emerald-700 max-w-md mb-4">
+                                                        Pengklaim ({approvedClaim?.claimant?.name || 'pemilik barang'}) harus memindai QR Code ini menggunakan HP mereka saat bertemu. Anda otomatis akan mendapatkan <strong>+10 Poin</strong> setelah mereka konfirmasi.
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleGenerateQr}
+                                                        className="text-xs text-emerald-700 hover:text-emerald-800 font-bold underline flex items-center gap-1.5 transition-colors"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                                        Perbarui / Generate Ulang QR Code
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <div className="py-3 flex flex-col items-center">
+                                                    <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">
+                                                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                                    </div>
+                                                    <h4 className="text-base font-bold text-gray-900 mb-1">Klaim Telah Disetujui Admin!</h4>
+                                                    <p className="text-xs text-gray-600 max-w-sm mb-4">
+                                                        Admin telah mengesahkan klaim atas barang ini. Silakan klik tombol di bawah untuk membuat QR Code serah terima yang siap dipindai oleh pengklaim.
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleGenerateQr}
+                                                        className="py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-200 transition-all active:scale-[0.98] flex items-center gap-2 text-sm"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                                        Generate QR Code Serah Terima
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { confirmDialog } from '@/Utils/sweetalert';
 
 export default function Index({ claims = [] }) {
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -9,8 +10,16 @@ export default function Index({ claims = [] }) {
     const [compareModalOpen, setCompareModalOpen] = useState(false);
     const [comparingClaim, setComparingClaim] = useState(null);
 
-    const handleApprove = (claim) => {
-        if (confirm(`Apakah Anda yakin ingin MENGESAHKAN klaim atas barang "${claim.item_report.title}" untuk pengklaim "${claim.claimant.name}"?\n\nKlaim lain yang masih pending untuk barang ini akan otomatis ditolak.`)) {
+    const handleApprove = async (claim) => {
+        const isConfirmed = await confirmDialog({
+            title: 'Sahkan Klaim Kepemilikan?',
+            text: `Pengesahan klaim atas "${claim.item_report.title}" untuk "${claim.claimant.name}". Klaim lain yang masih pending untuk barang ini akan otomatis ditolak.`,
+            confirmButtonText: 'Ya, Sahkan Klaim',
+            cancelButtonText: 'Batal',
+            icon: 'question',
+        });
+
+        if (isConfirmed) {
             router.patch(route('admin.claims.update', claim.id), { 
                 status: 'approved' 
             });

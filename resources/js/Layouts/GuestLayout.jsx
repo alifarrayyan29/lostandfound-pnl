@@ -1,6 +1,25 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { Toast } from '@/Utils/sweetalert';
 
 export default function GuestLayout({ children }) {
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash?.success) {
+            Toast.fire({
+                icon: 'success',
+                title: flash.success,
+            });
+        }
+        if (flash?.error) {
+            Toast.fire({
+                icon: 'error',
+                title: flash.error,
+            });
+        }
+    }, [flash]);
+
     return (
         <div className="flex min-h-screen flex-col items-center pt-6 sm:justify-center sm:pt-0 bg-gradient-to-br from-orange-50 via-[#f8f9fa] to-orange-100/50 relative overflow-hidden font-sans">
             {/* Decorative background blobs */}

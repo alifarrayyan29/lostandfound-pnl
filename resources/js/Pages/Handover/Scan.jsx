@@ -1,15 +1,24 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { confirmDialog } from '@/Utils/sweetalert';
 
 export default function Scan({ qr }) {
     const { post, processing } = useForm({
         code: qr.code,
     });
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
-        if (confirm("Apakah Anda yakin telah menerima barang ini?")) {
+        const isConfirmed = await confirmDialog({
+            title: 'Konfirmasi Serah Terima?',
+            text: 'Apakah Anda yakin telah menerima fisik barang ini secara langsung dari penemu/pelapor?',
+            confirmButtonText: 'Ya, Saya Telah Menerima',
+            cancelButtonText: 'Batal',
+            icon: 'question',
+        });
+
+        if (isConfirmed) {
             post(route('qr.handover'));
         }
     };

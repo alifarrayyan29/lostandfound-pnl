@@ -3,6 +3,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
+import { Toast } from '@/Utils/sweetalert';
 
 const SidebarLink = ({ href, active, children, icon }) => (
     <Link
@@ -20,9 +21,37 @@ const SidebarLink = ({ href, active, children, icon }) => (
 
 export default function AuthenticatedLayout({ header, children }) {
     const { user } = usePage().props.auth;
+    const { flash } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     
     const [sidebarWidth, setSidebarWidth] = useState(260); // 260px default
+
+    useEffect(() => {
+        if (flash?.success) {
+            Toast.fire({
+                icon: 'success',
+                title: flash.success,
+            });
+        }
+        if (flash?.error) {
+            Toast.fire({
+                icon: 'error',
+                title: flash.error,
+            });
+        }
+        if (flash?.warning) {
+            Toast.fire({
+                icon: 'warning',
+                title: flash.warning,
+            });
+        }
+        if (flash?.info) {
+            Toast.fire({
+                icon: 'info',
+                title: flash.info,
+            });
+        }
+    }, [flash]);
 
     return (
         <div 

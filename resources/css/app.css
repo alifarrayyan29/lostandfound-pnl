@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* SweetAlert2 Custom Styling & Button Separation */
+.swal2-actions {
+    display: flex !important;
+    gap: 0.65rem !important;
+    margin-top: 1.25rem !important;
+    justify-content: center !important;
+}
+
+.swal2-actions button {
+    margin: 0 !important;
+}
+
+
+.swal2-actions button {
+    margin: 0 !important;
+}

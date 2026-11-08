@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { confirmDialog } from '@/Utils/sweetalert';
 
 export default function Index({ categories }) {
     const [editingId, setEditingId] = useState(null);
@@ -26,8 +27,16 @@ export default function Index({ categories }) {
         setData('name', category.name);
     };
 
-    const handleDelete = (id) => {
-        if (confirm('Yakin ingin menghapus kategori ini?')) {
+    const handleDelete = async (id) => {
+        const isConfirmed = await confirmDialog({
+            title: 'Hapus Kategori?',
+            text: 'Kategori ini akan dihapus dari sistem.',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            isDanger: true,
+        });
+
+        if (isConfirmed) {
             router.delete(route('admin.categories.destroy', id));
         }
     };

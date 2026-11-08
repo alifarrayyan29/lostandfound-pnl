@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { confirmDialog } from '@/Utils/sweetalert';
 
 export default function Index({ buildings }) {
     const [editingId, setEditingId] = useState(null);
@@ -32,8 +33,16 @@ export default function Index({ buildings }) {
         });
     };
 
-    const handleDelete = (id) => {
-        if (confirm('Yakin ingin menghapus gedung ini?')) {
+    const handleDelete = async (id) => {
+        const isConfirmed = await confirmDialog({
+            title: 'Hapus Gedung / Lokasi?',
+            text: 'Data gedung/lokasi ini akan dihapus dari sistem.',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            isDanger: true,
+        });
+
+        if (isConfirmed) {
             router.delete(route('admin.buildings.destroy', id));
         }
     };

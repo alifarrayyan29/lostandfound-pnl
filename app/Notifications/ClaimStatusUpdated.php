@@ -52,12 +52,17 @@ class ClaimStatusUpdated extends Notification
     public function toArray(object $notifiable): array
     {
         $statusText = $this->status === 'approved' ? 'disetujui' : 'ditolak';
+        $message = "Klaim Anda untuk barang '{$this->claim->itemReport->title}' telah {$statusText}.";
+        if ($this->status === 'rejected' && !empty($this->claim->rejection_reason)) {
+            $message .= " Alasan: {$this->claim->rejection_reason}";
+        }
         
         return [
             'title' => 'Status Klaim Diperbarui',
-            'message' => "Klaim Anda untuk barang '{$this->claim->itemReport->title}' telah {$statusText}.",
+            'message' => $message,
             'claim_id' => $this->claim->id,
-            'status' => $this->status
+            'status' => $this->status,
+            'rejection_reason' => $this->claim->rejection_reason ?? null,
         ];
     }
 }

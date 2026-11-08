@@ -26,7 +26,7 @@ Route::get('/dashboard', function () {
         'leaderboard' => $leaderboard,
         'recentReports' => $recentReports
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 use App\Http\Controllers\ItemReportController;
 use App\Http\Controllers\ClaimController;
@@ -47,7 +47,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     Route::resource('buildings', AdminBuildingController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

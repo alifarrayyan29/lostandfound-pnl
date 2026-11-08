@@ -61,15 +61,22 @@ export default function Index({ claims }) {
                                                     <div className="text-sm text-gray-900">{new Date(claim.created_at).toLocaleDateString('id-ID')}</div>
                                                     <div className="text-xs text-gray-500">{new Date(claim.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-6 py-4">
                                                     {claim.status === 'pending' && (
                                                         <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu Verifikasi</span>
                                                     )}
                                                     {claim.status === 'approved' && (
-                                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujuti</span>
+                                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
                                                     )}
                                                     {claim.status === 'rejected' && (
-                                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                                                        <div>
+                                                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                                                            {claim.rejection_reason && (
+                                                                <div className="text-xs text-red-600 mt-1 max-w-xs" title={claim.rejection_reason}>
+                                                                    Alasan: {claim.rejection_reason}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

@@ -12,11 +12,12 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::firstOrCreate(
+        \App\Models\User::updateOrCreate(
             ['nim' => 'admin'],
             [
                 'name' => 'Administrator',
                 'email' => 'admin@pnl.ac.id',
+                'email_verified_at' => now(),
                 'password' => bcrypt('password'),
                 'role' => 'admin',
                 'whatsapp_number' => '081234567890'

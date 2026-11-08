@@ -6,12 +6,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\QrTag;
 use App\Models\Claim;
+use Illuminate\Support\Facades\DB;
 
 class QrHandoverController extends Controller
 {
     public function scan($code)
     {
-        $qr = QrTag::where('code', $code)->with(['itemReport.user', 'itemReport.category'])->firstOrFail();
+        $qr = QrTag::where('code', $code)->with(['itemReport.user', 'itemReport.category', 'itemReport.building'])->firstOrFail();
         
         // Verifikasi bahwa user yang men-scan adalah claimant (pemilik barang) yang klaimnya disetujui
         $isAuthorized = Claim::where('item_report_id', $qr->item_report_id)
@@ -20,7 +21,12 @@ class QrHandoverController extends Controller
             ->exists();
 
         if (!$isAuthorized) {
-            abort(403, 'Akses ditolak. Hanya pemilik sah yang klaimnya disetujui yang dapat memindai QR Code ini.');
+            abort(403, 'Akses ditolak. Hanya pengklaim sah yang disetujui yang dapat memindai QR Code ini.');
+        }
+
+        // Jika QR sudah pernah dipakai serah terima (AC-09)
+        if ($qr->status === 'handed_over' || $qr->itemReport->status === 'closed') {
+            return redirect()->route('dashboard')->with('error', 'Serah terima untuk barang ini sudah selesai dilakukan sebelumnya.');
         }
         
         return Inertia::render('Handover/Scan', [
@@ -31,38 +37,45 @@ class QrHandoverController extends Controller
     public function confirmHandover(Request $request)
     {
         $validated = $request->validate(['code' => 'required|exists:qr_tags,code']);
-        $qr = QrTag::where('code', $validated['code'])->firstOrFail();
+        $qr = QrTag::where('code', $validated['code'])->with('itemReport.user')->firstOrFail();
         
-        // Verifikasi lagi
+        // Verifikasi otorisasi pengklaim
         $isAuthorized = Claim::where('item_report_id', $qr->item_report_id)
             ->where('claimant_id', auth()->id())
             ->where('status', 'approved')
             ->exists();
 
         if (!$isAuthorized) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengonfirmasi serah terima barang ini.');
         }
 
-        $qr->update(['status' => 'handed_over']);
-        $itemReport = $qr->itemReport;
-        $itemReport->update(['status' => 'closed']);
-        
-        // Award points if the original reporter found the item
-        if ($itemReport->type === 'found' && $itemReport->user_id) {
-            $user = $itemReport->user;
-            $user->increment('points', 10);
-            
-            // Check for new badges
-            $earnedBadgeIds = $user->badges()->pluck('badges.id')->toArray();
-            $newBadges = \App\Models\Badge::where('point_threshold', '<=', $user->points)
-                                          ->whereNotIn('id', $earnedBadgeIds)
-                                          ->get();
-            
-            foreach ($newBadges as $badge) {
-                $user->badges()->attach($badge->id);
-            }
+        // Cek ketat (AC-09, AC-10): QR harus active dan laporan claimed, mencegah perulangan poin
+        if ($qr->status !== 'active' || $qr->itemReport->status !== 'claimed') {
+            return redirect()->route('dashboard')->with('error', 'Serah terima gagal: QR Code ini sudah pernah digunakan atau transaksi sudah selesai.');
         }
+
+        DB::transaction(function () use ($qr) {
+            $qr->update(['status' => 'handed_over']);
+            $itemReport = $qr->itemReport;
+            $itemReport->update(['status' => 'closed']);
+            
+            // Berikan poin kepada penemu barang (hanya 1 kali per transaksi sah)
+            if ($itemReport->type === 'found' && $itemReport->user_id) {
+                $user = $itemReport->user;
+                $user->increment('points', 10);
+                
+                // Periksa perolehan badge baru
+                $earnedBadgeIds = $user->badges()->pluck('badges.id')->toArray();
+                $newBadges = \App\Models\Badge::where('point_threshold', '<=', $user->points)
+                                              ->whereNotIn('id', $earnedBadgeIds)
+                                              ->get();
+                
+                foreach ($newBadges as $badge) {
+                    $user->badges()->attach($badge->id);
+                }
+            }
+        });
         
-        return redirect()->route('dashboard')->with('success', 'Barang telah berhasil diterima, laporan ditutup. Terima kasih!');
+        return redirect()->route('dashboard')->with('success', 'Barang telah berhasil diterima, laporan resmi ditutup. Terima kasih!');
     }
 }

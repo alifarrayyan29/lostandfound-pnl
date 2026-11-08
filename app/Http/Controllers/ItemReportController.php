@@ -89,16 +89,17 @@ class ItemReportController extends Controller
     {
         $report->load(['user', 'category', 'building', 'qrTag']);
         
-        $hasClaimed = false;
+        $userClaim = null;
         if (auth()->check()) {
-            $hasClaimed = \App\Models\Claim::where('item_report_id', $report->id)
+            $userClaim = \App\Models\Claim::where('item_report_id', $report->id)
                 ->where('claimant_id', auth()->id())
-                ->exists();
+                ->first();
         }
 
         return Inertia::render('ItemReports/Show', [
             'report' => $report,
-            'hasClaimed' => $hasClaimed,
+            'userClaim' => $userClaim,
+            'hasClaimed' => (bool) $userClaim,
             'qrCodeUrl' => $report->qrTag && $report->qrTag->status === 'active' 
                 ? route('qr.scan', $report->qrTag->code) 
                 : null

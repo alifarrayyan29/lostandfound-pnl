@@ -8,7 +8,7 @@ class Claim extends Model
 {
     protected $fillable = [
         'item_report_id', 'claimant_id', 'proof_description', 
-        'proof_photo_path', 'status', 'reviewed_by', 'reviewed_at'
+        'proof_photo_path', 'status', 'rejection_reason', 'reviewed_by', 'reviewed_at'
     ];
 
     public function itemReport()

@@ -34,15 +34,20 @@ class ClaimController extends Controller
 
         // Validasi: hanya bisa mengklaim barang 'found' (ditemukan)
         if ($report->type !== 'found') {
-            abort(403, 'Hanya barang temuan yang bisa diklaim.');
+            return redirect()->route('reports.show', $report->id)->with('error', 'Hanya barang temuan yang bisa diklaim.');
+        }
+
+        // Validasi: barang harus berstatus 'new' (masih dapat diklaim)
+        if ($report->status !== 'new') {
+            return redirect()->route('reports.show', $report->id)->with('error', 'Barang ini sudah diklaim atau serah terima sudah selesai.');
         }
 
         // Validasi: tidak bisa mengklaim barang sendiri
         if ($report->user_id === auth()->id()) {
-            abort(403, 'Anda tidak bisa mengklaim laporan yang Anda buat sendiri.');
+            return redirect()->route('reports.show', $report->id)->with('error', 'Anda tidak bisa mengklaim laporan yang Anda buat sendiri.');
         }
 
-        // Validasi: cek apakah user sudah pernah mengajukan klaim untuk barang ini
+        // Validasi: cek apakah user sudah pernah mengajukan klaim untuk barang ini (AC-04)
         $existingClaim = Claim::where('item_report_id', $report->id)
             ->where('claimant_id', auth()->id())
             ->first();
@@ -66,8 +71,25 @@ class ClaimController extends Controller
 
         $report = ItemReport::findOrFail($validated['item_report_id']);
 
-        if ($report->type !== 'found' || $report->user_id === auth()->id()) {
-            abort(403);
+        if ($report->type !== 'found') {
+            return redirect()->route('reports.index')->with('error', 'Hanya barang temuan yang bisa diklaim.');
+        }
+
+        if ($report->status !== 'new') {
+            return redirect()->route('reports.show', $report->id)->with('error', 'Barang ini sudah tidak dapat diklaim lagi.');
+        }
+
+        if ($report->user_id === auth()->id()) {
+            return redirect()->route('reports.show', $report->id)->with('error', 'Anda tidak bisa mengklaim barang yang Anda laporkan sendiri.');
+        }
+
+        // Validasi duplikasi klaim di level backend (AC-04)
+        $alreadyClaimed = Claim::where('item_report_id', $report->id)
+            ->where('claimant_id', auth()->id())
+            ->exists();
+
+        if ($alreadyClaimed) {
+            return redirect()->route('claims.index')->with('error', 'Anda sudah mengajukan klaim untuk barang ini.');
         }
 
         $photoPath = null;

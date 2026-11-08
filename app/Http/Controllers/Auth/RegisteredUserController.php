@@ -47,12 +47,11 @@ class RegisteredUserController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'email' => $request->email,
+                'email_verified_at' => now(),
                 'major' => $request->major,
                 'whatsapp_number' => $request->whatsapp_number,
                 'password' => Hash::make($request->password),
             ]);
-
-            event(new Registered($user));
 
             \Illuminate\Support\Facades\DB::commit();
 
@@ -62,7 +61,7 @@ class RegisteredUserController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return back()->withErrors([
-                'email' => 'Pendaftaran gagal (Email verifikasi tidak dapat dikirim). Error: ' . $e->getMessage()
+                'email' => 'Pendaftaran gagal. Error: ' . $e->getMessage()
             ])->withInput();
         }
     }

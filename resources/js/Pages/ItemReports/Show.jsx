@@ -188,13 +188,33 @@ export default function Show({ report, hasClaimed, userClaim, approvedClaim, qrC
                                 {report.status === 'closed' && (
                                     <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
                                         <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Laporan Selesai</span>
-                                        <p className="text-sm text-gray-700 font-medium mt-1">Barang ini telah berhasil diserahterimakan kepada pemiliknya yang sah.</p>
+                                        <p className="text-sm text-gray-700 font-medium mt-1">
+                                            {report.type === 'lost' 
+                                                ? 'Barang ini telah berhasil ditemukan kembali dan laporan resmi ditutup.' 
+                                                : 'Barang ini telah berhasil diserahterimakan kepada pemiliknya yang sah.'}
+                                        </p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Tombol Aksi */}
                             <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col gap-3">
+                                {/* Tombol Tutup Laporan Kehilangan bagi pemilik laporan atau Admin */}
+                                {report.type === 'lost' && report.status !== 'closed' && (auth.user?.id === report.user_id || auth.user?.role === 'admin') && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (confirm('Tandai laporan kehilangan ini telah selesai (barang telah ditemukan kembali)?')) {
+                                                router.patch(route('reports.close', report.id));
+                                            }
+                                        }}
+                                        className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-200 transition-all active:scale-[0.98] flex justify-center items-center gap-2"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Tandai Barang Telah Ditemukan (Tutup Laporan)
+                                    </button>
+                                )}
+
                                 {/* 1. Pengguna belum klaim dan barang masih status 'new' */}
                                 {report.type === 'found' && report.user_id !== auth.user?.id && !userClaim && report.status === 'new' && (
                                     <Link 

@@ -44,6 +44,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     Route::get('/history', [AdminController::class, 'history'])->name('history.index');
     Route::get('/recapitulation', [AdminController::class, 'recapitulation'])->name('recapitulation.index');
     Route::patch('/claims/{claim}', [AdminController::class, 'updateClaimStatus'])->name('claims.update');
+    Route::patch('/reports/{report}/status', [AdminController::class, 'updateReportStatus'])->name('reports.updateStatus');
 
     Route::resource('categories', AdminCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('buildings', AdminBuildingController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -55,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('reports', ItemReportController::class);
+    Route::patch('/reports/{report}/close', [ItemReportController::class, 'closeReport'])->name('reports.close');
     Route::resource('claims', ClaimController::class);
     
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Index({ reports = [], qrTags = {}, categories = [], buildings = [] }) {
@@ -8,6 +8,7 @@ export default function Index({ reports = [], qrTags = {}, categories = [], buil
     const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'new' | 'claimed' | 'closed'
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [buildingFilter, setBuildingFilter] = useState('all');
+
 
     const filteredReports = reports.filter((report) => {
         const matchesSearch = 
@@ -184,7 +185,13 @@ export default function Index({ reports = [], qrTags = {}, categories = [], buil
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                                            {qrTags[report.id] ? (
+                                            {report.type === 'lost' ? (
+                                                <span className={`font-semibold text-xs px-2.5 py-1 rounded-full ${
+                                                    report.status === 'closed' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400 bg-gray-50 italic'
+                                                }`}>
+                                                    {report.status === 'closed' ? 'Ditemukan / Selesai' : '- (Laporan Hilang)'}
+                                                </span>
+                                            ) : qrTags[report.id] ? (
                                                 <span className={`font-bold text-xs px-2.5 py-1 rounded-full uppercase ${
                                                     qrTags[report.id].status === 'active' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
                                                 }`}>

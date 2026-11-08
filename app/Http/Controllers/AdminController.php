@@ -88,6 +88,26 @@ class AdminController extends Controller
      */
     public function recapitulation()
     {
+        // Sinkronisasi otomatis: Jika ada barang temuan yang sudah 'closed' (serah terima selesai),
+        // otomatis tutup laporan kehilangan aktif milik pengklaim yang bersangkutan.
+        $closedFoundReports = ItemReport::where('type', 'found')
+            ->where('status', 'closed')
+            ->pluck('id');
+
+        if ($closedFoundReports->isNotEmpty()) {
+            $approvedClaimants = Claim::whereIn('item_report_id', $closedFoundReports)
+                ->where('status', 'approved')
+                ->pluck('claimant_id')
+                ->unique();
+
+            if ($approvedClaimants->isNotEmpty()) {
+                ItemReport::whereIn('user_id', $approvedClaimants)
+                    ->where('type', 'lost')
+                    ->where('status', '!=', 'closed')
+                    ->update(['status' => 'closed']);
+            }
+        }
+
         $reports = ItemReport::with(['user', 'category', 'building', 'qrTag'])->latest()->get();
         $qrTags = QrTag::all()->keyBy('item_report_id');
         $categories = Category::all();
@@ -168,5 +188,19 @@ class AdminController extends Controller
         });
 
         return redirect()->back()->with('success', 'Status klaim berhasil diverifikasi dan data telah diperbarui.');
+    }
+
+    /**
+     * Memperbarui status laporan secara langsung oleh Admin
+     */
+    public function updateReportStatus(Request $request, ItemReport $report)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:new,claimed,closed'
+        ]);
+
+        $report->update(['status' => $validated['status']]);
+
+        return redirect()->back()->with('success', "Status laporan '{$report->title}' berhasil diperbarui menjadi {$validated['status']}.");
     }
 }

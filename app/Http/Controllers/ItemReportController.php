@@ -174,4 +174,18 @@ class ItemReportController extends Controller
 
         return redirect()->route('reports.index')->with('success', 'Laporan berhasil dihapus.');
     }
+
+    /**
+     * Menandai laporan telah selesai (misal barang hilang telah ditemukan kembali)
+     */
+    public function closeReport(Request $request, ItemReport $report)
+    {
+        if (auth()->id() !== $report->user_id && auth()->user()->role !== 'admin') {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $report->update(['status' => 'closed']);
+
+        return redirect()->back()->with('success', 'Laporan telah berhasil ditandai selesai (closed).');
+    }
 }

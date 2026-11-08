@@ -59,6 +59,21 @@ class QrHandoverController extends Controller
             $itemReport = $qr->itemReport;
             $itemReport->update(['status' => 'closed']);
             
+            // Otomatis ubah laporan kehilangan (lost) milik pengklaim menjadi closed
+            $claimantId = auth()->id();
+            $updatedCount = \App\Models\ItemReport::where('user_id', $claimantId)
+                ->where('type', 'lost')
+                ->where('category_id', $itemReport->category_id)
+                ->where('status', '!=', 'closed')
+                ->update(['status' => 'closed']);
+
+            if ($updatedCount === 0) {
+                \App\Models\ItemReport::where('user_id', $claimantId)
+                    ->where('type', 'lost')
+                    ->where('status', '!=', 'closed')
+                    ->update(['status' => 'closed']);
+            }
+
             // Berikan poin kepada penemu barang (hanya 1 kali per transaksi sah)
             if ($itemReport->type === 'found' && $itemReport->user_id) {
                 $user = $itemReport->user;

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Claim;
 use App\Models\ItemReport;
+use App\Models\Category;
+use App\Models\Building;
 use App\Models\QrTag;
 use App\Notifications\ClaimStatusUpdated;
 use Illuminate\Support\Facades\DB;
@@ -13,23 +15,11 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
+    /**
+     * Halaman Utama: Executive Dashboard
+     */
     public function dashboard()
     {
-        // Klaim yang masih menunggu verifikasi (Pending)
-        $pendingClaims = Claim::with(['itemReport.category', 'itemReport.building', 'itemReport.user', 'claimant'])
-            ->where('status', 'pending')
-            ->latest()
-            ->get();
-
-        // Riwayat klaim yang sudah diverifikasi (Approved / Rejected)
-        $reviewedClaims = Claim::with(['itemReport.category', 'itemReport.building', 'itemReport.user', 'claimant', 'reviewer'])
-            ->whereIn('status', ['approved', 'rejected'])
-            ->latest('reviewed_at')
-            ->get();
-        
-        $reports = ItemReport::with(['user', 'category', 'building', 'qrTag'])->latest()->get();
-        $qrTags = QrTag::all()->keyBy('item_report_id');
-
         $stats = [
             'total_reports' => ItemReport::count(),
             'pending_claims' => Claim::where('status', 'pending')->count(),
@@ -49,16 +39,71 @@ class AdminController extends Controller
             ]
         ];
 
+        // Preview klaim terbaru yang menunggu
+        $latestPending = Claim::with(['itemReport.category', 'itemReport.building', 'itemReport.user', 'claimant'])
+            ->where('status', 'pending')
+            ->latest()
+            ->take(5)
+            ->get();
+
         return Inertia::render('Admin/Dashboard', [
-            'claims' => $pendingClaims,
-            'reviewedClaims' => $reviewedClaims,
-            'reports' => $reports,
-            'qrTags' => $qrTags,
             'stats' => $stats,
-            'chartData' => $chartData
+            'chartData' => $chartData,
+            'latestPending' => $latestPending,
         ]);
     }
 
+    /**
+     * Halaman Khusus: Verifikasi Klaim (Pending)
+     */
+    public function verifications()
+    {
+        $pendingClaims = Claim::with(['itemReport.category', 'itemReport.building', 'itemReport.user', 'claimant'])
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        return Inertia::render('Admin/Verifications/Index', [
+            'claims' => $pendingClaims
+        ]);
+    }
+
+    /**
+     * Halaman Khusus: Riwayat Verifikasi Klaim (Approved & Rejected)
+     */
+    public function history()
+    {
+        $reviewedClaims = Claim::with(['itemReport.category', 'itemReport.building', 'itemReport.user', 'claimant', 'reviewer'])
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest('reviewed_at')
+            ->get();
+
+        return Inertia::render('Admin/History/Index', [
+            'reviewedClaims' => $reviewedClaims
+        ]);
+    }
+
+    /**
+     * Halaman Khusus: Rekapitulasi Daftar Laporan
+     */
+    public function recapitulation()
+    {
+        $reports = ItemReport::with(['user', 'category', 'building', 'qrTag'])->latest()->get();
+        $qrTags = QrTag::all()->keyBy('item_report_id');
+        $categories = Category::all();
+        $buildings = Building::all();
+
+        return Inertia::render('Admin/Recapitulation/Index', [
+            'reports' => $reports,
+            'qrTags' => $qrTags,
+            'categories' => $categories,
+            'buildings' => $buildings
+        ]);
+    }
+
+    /**
+     * Aksi Verifikasi: Setujui / Tolak Klaim
+     */
     public function updateClaimStatus(Request $request, Claim $claim)
     {
         $validated = $request->validate([
@@ -124,5 +169,4 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Status klaim berhasil diverifikasi dan data telah diperbarui.');
     }
-
 }

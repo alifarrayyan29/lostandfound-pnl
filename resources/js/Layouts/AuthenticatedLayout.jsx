@@ -66,8 +66,36 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('admin.dashboard')}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>}
                             >
-                                Dashboard Admin
+                                Dashboard
                             </SidebarLink>
+
+                            <SidebarLink 
+                                href={route('admin.verifications.index')} 
+                                active={route().current('admin.verifications.*')} 
+                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
+                            >
+                                Verifikasi Klaim
+                            </SidebarLink>
+
+                            <SidebarLink 
+                                href={route('admin.history.index')} 
+                                active={route().current('admin.history.*')} 
+                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
+                            >
+                                Riwayat Klaim
+                            </SidebarLink>
+
+                            <SidebarLink 
+                                href={route('admin.recapitulation.index')} 
+                                active={route().current('admin.recapitulation.*')} 
+                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
+                            >
+                                Rekapitulasi Laporan
+                            </SidebarLink>
+
+                            <div className="pt-4 pb-2">
+                                <p className="px-6 text-[12px] font-bold text-[#f5a886]">Master Data</p>
+                            </div>
 
                             <SidebarLink 
                                 href={route('admin.categories.index')} 
@@ -181,7 +209,10 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="pt-2 pb-3 space-y-1 px-2">
                             {user.role === 'admin' ? (
                                 <>
-                                    <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')} className="rounded-xl">Dashboard Admin</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')} className="rounded-xl">Dashboard</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('admin.verifications.index')} active={route().current('admin.verifications.*')} className="rounded-xl">Verifikasi Klaim</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('admin.history.index')} active={route().current('admin.history.*')} className="rounded-xl">Riwayat Klaim</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('admin.recapitulation.index')} active={route().current('admin.recapitulation.*')} className="rounded-xl">Rekapitulasi Laporan</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('admin.categories.index')} active={route().current('admin.categories.*')} className="rounded-xl">Kelola Kategori</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('admin.buildings.index')} active={route().current('admin.buildings.*')} className="rounded-xl">Kelola Lokasi</ResponsiveNavLink>
                                 </>

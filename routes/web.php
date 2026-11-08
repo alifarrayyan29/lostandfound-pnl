@@ -40,8 +40,10 @@ use App\Http\Controllers\AdminBuildingController;
 
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/verifications', [AdminController::class, 'verifications'])->name('verifications.index');
+    Route::get('/history', [AdminController::class, 'history'])->name('history.index');
+    Route::get('/recapitulation', [AdminController::class, 'recapitulation'])->name('recapitulation.index');
     Route::patch('/claims/{claim}', [AdminController::class, 'updateClaimStatus'])->name('claims.update');
-    
 
     Route::resource('categories', AdminCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('buildings', AdminBuildingController::class)->only(['index', 'store', 'update', 'destroy']);
